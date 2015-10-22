@@ -9,9 +9,9 @@
   <div class="span12">
 
     <h1 class="story-section">My News</h1>
-          <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in awesomeThings">
-            <li><a href="#" tooltip="{{thing.info}}">{{thing.name}}<button type="button" class="close" ng-click="deleteThing(thing)">&times;</button></a></li>
-          </ul>
+<!--        <ul class="nav nav-tabs nav-stacked col-md-4 col-lg-4 col-sm-6" ng-repeat="thing in awesomeThings">
+          <li><a href="#" tooltip="{{thing.info}}">{{thing.name}}<button type="button" class="close" ng-click="deleteThing(thing)">&times;</button></a></li>
+        </ul>
 
       <form class="thing-form">
         <label>Syncs in realtime across clients</label>
@@ -23,6 +23,11 @@
         </p>
       </form>
 
-
+-->
+    <div class="story myStory" ng-repeat="story in storiesList | orderBy:'distance'">
+      <span>{{ story.distance }} mi</span>
+      <h4 class="story-title"><a href="#">{{ story.headline }}</a></h4>
+      <p>{{ story.summary }}</p>
+    </div>
   </div>
 </div>

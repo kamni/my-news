@@ -8,8 +8,8 @@ var ThingSchema = new Schema({
   info: String,
   active: Boolean,
   location: {
-    lat: 0.0,
-    lon: 0.0
+    lat: Number,
+    lon: Number
   },
   city: String,
   headline: String,
