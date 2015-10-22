@@ -5,7 +5,7 @@ angular.module('mynewsApp')
     $stateProvider
       .state('my-news-map', {
         url: '/my-news-map',
-        templateUrl: 'app/my-news/my-news-map.html',
+        templateUrl: 'app/my-news-map/my-news-map.html',
         controller: 'MyNewsMapCtrl'
       });
   });

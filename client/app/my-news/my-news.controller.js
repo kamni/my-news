@@ -8,6 +8,9 @@ angular.module('mynewsApp')
   //})
   .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation) {
     var self = this;
+    var lat = +geolocation.geo.lat;
+    var lon = +geolocation.geo.lon;
+    var coorOffset = 1;
 
     $scope.awesomeThings = [];
 
@@ -66,6 +69,7 @@ angular.module('mynewsApp')
         return stories;
       });
     }
+    console.log(  (lat - coorOffset), (lon - coorOffset), (lat + coorOffset), (lon + coorOffset) );
 
     function getStories(){
       console.log(stories.getStories().length);
@@ -73,13 +77,12 @@ angular.module('mynewsApp')
         $scope.storiesList = stories.getStories();
         return;
       }
-
       findStories({
         city: "",
-        lat1: 31.7,
-        lon1: -86.4,
-        lat2: 34.8,
-        lon2: -82.3
+        lat1: (lat - coorOffset),
+        lon1: (lon - coorOffset),
+        lat2: (lat + coorOffset),
+        lon2: (lon + coorOffset)
       }).then(function(storiesResult){
         setStories.call(self, storiesResult);
       }, function(err) {
