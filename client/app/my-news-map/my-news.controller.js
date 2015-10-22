@@ -6,7 +6,7 @@ angular.module('mynewsApp')
   //    return $sce.trustAsHtml(val);
   //  };
   //})
-  .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation) {
+  .controller('MyNewsMapCtrl', function ($scope, $http, socket, stories, geolocation) {
     var self = this;
 
     $scope.awesomeThings = [];

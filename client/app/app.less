@@ -16,14 +16,16 @@
 }
 .padded-container {
   padding: 0 20px 20px;
+  box-sizing: border-box;
 }
 
 .story.myStory {
   margin: 0 20px 20px 0;
   border: solid 1px #ddd;
-  background: #f2f2f2;
+  background: #fafafa;
   width: 100%;
   padding: 10px;
+  box-sizing: border-box;
 
   span {
     float: right;
@@ -32,6 +34,7 @@
     font-size: 11px;
     font-style: bold;
     padding: 0 4px;
+    margin: 0 0 10px 10px;
     position: relative;
     font-family: Arial, sans-serif;
     &:before {
@@ -45,10 +48,34 @@
     }
   }
 }
+.myNewsTabs {
+  div {
+    box-sizing: border-box;
+    width: 50%;
+    float: left;
+    text-align: center;
+    font-size: 18px;
+    border: solid 2px #DDDDDD;
+    a {
+      box-sizing: border-box;
+      font-weight: bold;
+      color: #000 !important;
+      width: 100%;
+      padding: 10px;
+      display: block;
+      text-decoration: none;
+      &:hover,
+      &.active {
+        background: #eee;
+      }
+    }
+  }
+}
 // injector
 @import 'account/login/login.less';
 @import 'admin/admin.less';
 @import 'main/main.less';
+@import 'my-news-map/my-news.less';
 @import 'my-news/my-news.less';
 @import 'my-stories/my-stories.less';
 @import 'report/report.less';
