@@ -8,9 +8,11 @@ angular.module('mynewsApp')
   //})
   .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation) {
     var self = this;
-    var lat = +geolocation.geo.lat;
-    var lon = +geolocation.geo.lon;
-    var coorOffset = 1;
+    var eventsBaseUrl = "http://ajc.stage.pointslocal.com/";
+    var eventsOptions = {lon: -84.36, lat: 33.92, radius: 15} // for testing only
+
+
+    $scope.hey = 'hey';
 
     $scope.awesomeThings = [];
 
@@ -69,7 +71,8 @@ angular.module('mynewsApp')
         return stories;
       });
     }
-    console.log(  (lat - coorOffset), (lon - coorOffset), (lat + coorOffset), (lon + coorOffset) );
+
+    function findEvents()
 
     function getStories(){
       console.log(stories.getStories().length);
@@ -77,12 +80,13 @@ angular.module('mynewsApp')
         $scope.storiesList = stories.getStories();
         return;
       }
+
       findStories({
         city: "",
-        lat1: (lat - coorOffset),
-        lon1: (lon - coorOffset),
-        lat2: (lat + coorOffset),
-        lon2: (lon + coorOffset)
+        lat1: 32.7,
+        long1: -85.4,
+        lat2: 33.8,
+        long2: -83.3
       }).then(function(storiesResult){
         setStories.call(self, storiesResult);
       }, function(err) {
@@ -99,7 +103,7 @@ angular.module('mynewsApp')
         data.headline = $(v.headline).text();
         data.summary = $(v.summary).text();
         data.geo = v.geo;
-        data.distance = +geolocation.distance(+v.geo.longitude, +v.geo.latitude);
+        data.distance = geolocation.distance(+v.geo.longitude, +v.geo.latitude);
         storiesList.push(data);
 
       });
@@ -108,19 +112,36 @@ angular.module('mynewsApp')
       console.log($scope.storiesList);
     }
 
+    function eventImageUrl(imageId, height, width) {
+        return eventsBaseUrl + "image?method=image.icrop&context=event.image&w=" + width + "&h=" + height + "&id=" + imageId
+    }
 
+    function findEvents(options) {
+      // pull events from pointsLocal
+      var apiUrl = "api/v1/events"
+      var data = {
+        latitude: options.lat,
+        longitude: options.lon,
+        radius: options.radius
+      };
+
+      return $.get(eventsBaseUrl + apiUrl, data, null, "json").then(function(json) {
+          var events = [];
+          $(json.items).each(function(item) {
+                events.push({
+                    headline: item.title,
+                    summary: item.description,
+                    url: eventsBaseUrl + "event/" + item.guid,
+                    image: eventImageUrl(item.id, 53, 93),
+                    venue: item.venue_name,
+                    geo: {
+                          address: item.venue_address,
+                          latitude: item.latitude,
+                          longitude: item.longitude
+                    }
+                });
+                return events;
+            });
+        });
+    }
   });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
