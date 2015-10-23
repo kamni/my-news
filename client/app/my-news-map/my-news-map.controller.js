@@ -90,7 +90,7 @@ angular.module('mynewsApp')
                   headline: headline,
                   summary: item.description,
                   url: eventsBaseUrl + "event/" + item.guid,
-                  photo: eventImageUrl(item.id, 53, 93),
+                  photo: eventImageUrl(item.image_id, 53, 93),
                   type: "Event",
                   geo: {
                         address: item.venue_address,
