@@ -6,36 +6,37 @@ angular.module('mynewsApp')
   //    return $sce.trustAsHtml(val);
   //  };
   //})
-  .controller('MyNewsMapCtrl', function ($scope, $http, socket, stories, geolocation) {
+  .controller('MyNewsMapCtrl', function ($scope, $http, socket, stories, Auth, geolocation) {
     var self = this;
-    var lat = +geolocation.geo.lat;
-    var lon = +geolocation.geo.lon;
+    var user = Auth.getCurrentUser();
+    var lat = user.lat || +geolocation.geo.lat;
+    var lon = user.lon || +geolocation.geo.lon;
     var coorOffset = 1;
     var allStories = [];
     var allEvents = [];
 
-    $scope.awesomeThings = [];
+    // $scope.awesomeThings = [];
 
-    $http.get('/api/things').success(function(awesomeThings) {
-      $scope.awesomeThings = awesomeThings;
-      socket.syncUpdates('thing', $scope.awesomeThings);
-    });
+    // $http.get('/api/things').success(function(awesomeThings) {
+    //   $scope.awesomeThings = awesomeThings;
+    //   socket.syncUpdates('thing', $scope.awesomeThings);
+    // });
 
-    $scope.addThing = function() {
-      if($scope.newThing === '') {
-        return;
-      }
-      $http.post('/api/things', { name: $scope.newThing });
-      $scope.newThing = '';
-    };
+    // $scope.addThing = function() {
+    //   if($scope.newThing === '') {
+    //     return;
+    //   }
+    //   $http.post('/api/things', { name: $scope.newThing });
+    //   $scope.newThing = '';
+    // };
 
-    $scope.deleteThing = function(thing) {
-      $http.delete('/api/things/' + thing._id);
-    };
+    // $scope.deleteThing = function(thing) {
+    //   $http.delete('/api/things/' + thing._id);
+    // };
 
-    $scope.$on('$destroy', function () {
-      socket.unsyncUpdates('thing');
-    });
+    // $scope.$on('$destroy', function () {
+    //   socket.unsyncUpdates('thing');
+    // });
 
 
   "use strict";
@@ -79,11 +80,10 @@ angular.module('mynewsApp')
     return Promise.resolve(xhr).then(function(json) {
         var events = [];
         $.each(json.items, function(k, item) {
-          console.log(item);
               events.push({
                   title: '',
                   text: '',
-                  type: '',
+                  type: 'event',
                   headline: item.venue_name ? item.title + " at " + item.venue_name : item.title,
                   summary: item.description,
                   url: eventsBaseUrl + "event/" + item.guid,
@@ -163,7 +163,7 @@ angular.module('mynewsApp')
                       longitude: Number($("Longitude", places).text())
                   }
               };
-
+              console.log(story);
               // Filter out anything that doesn't have a title
               if (story.title) {
                   stories.push(story);
@@ -221,7 +221,7 @@ angular.module('mynewsApp')
               map: map,
               position: { lat: story.geo.latitude, lng: story.geo.longitude },
               title: story.title,
-              icon: story.type === "ad" ? "/assets/images/pin_blue.png" : "/assets/images/pin_red.png"
+              icon: story.type === "ad" ? "/assets/images/pin_blue.png" : story.type === "event" ? "/assets/images/pin_green.png" : "/assets/images/pin_red.png"
           });
 
           var window = createPopup(story);
@@ -313,12 +313,10 @@ angular.module('mynewsApp')
               findStories(pos).then(function(stories) {
                   //console.log(stories);
                   map.update(stories.concat(allEvents));
-                  //setTimeout(poll, ms);
+                  // setTimeout(poll, ms);
               }, reject);
               findEvents(pos).then(function(events) {
-                  console.log(events);
                   map.update(events.concat(allStories));
-                  //setTimeout(poll, ms);
               }, reject);
           }
 
@@ -330,7 +328,7 @@ angular.module('mynewsApp')
       pos.radius = 1;
       pos.zoom = 12;
       StoryMap.create($("#map")[0], pos).then(function(map) {
-          pollStories(map, pos, 1000);
+          pollStories(map, pos, 5000);
       });
   });
 

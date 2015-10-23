@@ -8,36 +8,38 @@ angular.module('mynewsApp')
   //})
   .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation, Auth) {
     var self = this;
-    var lat = +geolocation.geo.lat;
-    var lon = +geolocation.geo.lon;
+    var user = Auth.getCurrentUser();
+    console.log(user);
+    var lat = user.lat || +geolocation.geo.lat;
+    var lon = user.lon || +geolocation.geo.lon;
     var coorOffset = 1;
     var host = "http://10.240.94.101:4301";
     var now = Date.now();
 
-    $scope.awesomeThings = [];
-    $scope.storiesList = [];
+    // $scope.awesomeThings = [];
+    // $scope.storiesList = [];
 
-    $http.get('/api/things').success(function(awesomeThings) {
-      $scope.awesomeThings = awesomeThings;
-      socket.syncUpdates('thing', $scope.awesomeThings);
-    });
+    // $http.get('/api/things').success(function(awesomeThings) {
+    //   $scope.awesomeThings = awesomeThings;
+    //   socket.syncUpdates('thing', $scope.awesomeThings);
+    // });
 
-    $scope.addThing = function() {
-      if($scope.newThing === '') {
-        return;
-      }
-      $http.post('/api/things', { name: $scope.newThing });
-      $scope.newThing = '';
-    };
+    // $scope.addThing = function() {
+    //   if($scope.newThing === '') {
+    //     return;
+    //   }
+    //   $http.post('/api/things', { name: $scope.newThing });
+    //   $scope.newThing = '';
+    // };
 
-    $scope.deleteThing = function(thing) {
-      $http.delete('/api/things/' + thing._id);
-    };
+    // $scope.deleteThing = function(thing) {
+    //   $http.delete('/api/things/' + thing._id);
+    // };
 
-    $scope.$on('$destroy', function () {
-      socket.unsyncUpdates('thing');
-      socket.unsyncUpdates('stories');
-    });
+    // $scope.$on('$destroy', function () {
+    //   socket.unsyncUpdates('thing');
+    //   socket.unsyncUpdates('stories');
+    // });
 
     if(stories.getStories().length === 0){
       $http.get('http://10.240.94.101:4301/eom/PortalConfig/wsbtv.com/jsp/rest3.jsp?query=&city=&lat1=' + (lat - coorOffset) + '&lat2=' + (lat + coorOffset) + '&long1=' + (lon - coorOffset) + '&long2=' + (lon + coorOffset))
@@ -47,7 +49,7 @@ angular.module('mynewsApp')
 
           $("item", storiesXml).each(function(i, doc) {
             var places = $("GeographicalPlaces", doc);
-            console.log(doc);
+
             storiesArray.push({
               headline: $("grouphead > headline", doc).html(),
               summary: $("summary", doc).html(),

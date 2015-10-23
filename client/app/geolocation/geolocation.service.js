@@ -1,11 +1,12 @@
 'use strict';
 
 angular.module('mynewsApp')
-  .service('geolocation', function ($http) {
+  .service('geolocation', function ($http, Auth) {
     var geo = {
       lat: 33.92472,
       lon: -84.35655
     };
+    var user = Auth.getCurrentUser();
 
     var baseUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=";
     var endUrl = "&key=AIzaSyAmweNIVntbXmpIZ0VA7umwPUKPPH3QAWw&sensor=false";
@@ -25,8 +26,8 @@ angular.module('mynewsApp')
     }
 
     function distance(lon1, lat1, lon2, lat2) {
-      lon2 = geo.lon || lon2;
-      lat2 = geo.lat || lat2;
+      lon2 = +user.lon || geo.lon || lon2;
+      lat2 = +user.lat || geo.lat || lat2;
       var R = 6371; // Radius of the earth in km
       var dLat = (lat2-lat1).toRad();  // Javascript functions in radians
       var dLon = (lon2-lon1).toRad();
