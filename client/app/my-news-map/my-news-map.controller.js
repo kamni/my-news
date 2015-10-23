@@ -74,8 +74,8 @@ angular.module('mynewsApp')
 
     var data = {
       latitude: options.lat,
-      longitude: options.lon,
-      radius: options.radius
+      longitude: options.long,
+      radius: options.rad
     };
 
     var xhr = $.ajax(eventsBaseUrl + apiUrl, { method: "GET", dataType: "json", data: data });
@@ -83,15 +83,15 @@ angular.module('mynewsApp')
     return Promise.resolve(xhr).then(function(json) {
         var events = [];
         $.each(json.items, function(k, item) {
+          var headline = item.venue_name ? item.title + " at " + item.venue_name : item.title;
               events.push({
-                  title: '',
-                  text: '',
-                  type: 'event',
-                  headline: item.venue_name ? item.title + " at " + item.venue_name : item.title,
+                  title: headline,
+                  text: item.description,
+                  headline: headline,
                   summary: item.description,
                   url: eventsBaseUrl + "event/" + item.guid,
                   photo: eventImageUrl(item.id, 53, 93),
-                  comment: "Event",
+                  type: "Event",
                   geo: {
                         address: item.venue_address,
                         latitude: +item.latitude,
@@ -326,7 +326,8 @@ angular.module('mynewsApp')
   }
 
   getPosition().then(function(pos) {
-      pos.radius = 1;
+      pos.rad = 15; // radius in miles, for events search
+      pos.radius = 1; // radius in lat/lon for stories search
       pos.zoom = 12;
       StoryMap.create($("#map")[0], pos).then(function(map) {
           pollStories(map, pos, 5000);
@@ -338,17 +339,3 @@ angular.module('mynewsApp')
 
 
   });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
