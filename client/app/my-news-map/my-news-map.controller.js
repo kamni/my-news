@@ -326,7 +326,7 @@ angular.module('mynewsApp')
   }
 
   getPosition().then(function(pos) {
-      pos.rad = 15; // radius in miles, for events search
+      pos.rad = 70; // radius in miles, for events search
       pos.radius = 1; // radius in lat/lon for stories search
       pos.zoom = 12;
       StoryMap.create($("#map")[0], pos).then(function(map) {
