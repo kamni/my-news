@@ -221,7 +221,7 @@ angular.module('mynewsApp')
               map: map,
               position: { lat: story.geo.latitude, lng: story.geo.longitude },
               title: story.title,
-              icon: story.type === "ad" ? "/assets/images/pin_blue.png" : story.type === "event" ? "/assets/images/pin_green.png" : "/assets/images/pin_red.png"
+              icon: story.type === "ad" ? "/assets/images/pin_green.png" : story.type === "event" ? "/assets/images/pin_blue.png" : "/assets/images/pin_red.png"
           });
 
           var window = createPopup(story);
@@ -272,7 +272,7 @@ angular.module('mynewsApp')
 
                           m = markers[story.url] = createStoryMarker(map, story);
 
-                          if (!initialLoad || true) {
+                          if (!initialLoad) {
                               m.setAnimation(google.maps.Animation.BOUNCE);
                               setTimeout(function() {
                                   m.setAnimation(null);
@@ -313,7 +313,7 @@ angular.module('mynewsApp')
               findStories(pos).then(function(stories) {
                   //console.log(stories);
                   map.update(stories.concat(allEvents));
-                  // setTimeout(poll, ms);
+                  setTimeout(poll, ms);
               }, reject);
               findEvents(pos).then(function(events) {
                   map.update(events.concat(allStories));
