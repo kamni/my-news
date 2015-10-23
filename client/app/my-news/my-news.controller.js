@@ -50,7 +50,8 @@ angular.module('mynewsApp')
           $("item", storiesXml).each(function(i, doc) {
             var places = $("GeographicalPlaces", doc);
 
-            storiesArray.push({
+            var story = {
+              title: $("grouphead > headline", doc).text().trim(),
               headline: $("grouphead > headline", doc).html(),
               summary: $("summary", doc).html(),
               text: $("text", doc).html(),
@@ -62,7 +63,11 @@ angular.module('mynewsApp')
                 latitude: $("Latitude", places).text(),
                 longitude: $("Longitude", places).text()
               }
-            });
+            };
+
+            if (story.title) {
+              storiesArray.push(story);
+            }
           });
 
           setStories.call(self, storiesArray);
@@ -131,7 +136,6 @@ angular.module('mynewsApp')
       $scope.storiesList = storiesList;
       stories.setStories(storiesList);
       socket.syncUpdates('stories', $scope.storiesList);
-      console.log($scope.storiesList);
     }
 
 

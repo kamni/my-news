@@ -12,8 +12,7 @@ angular.module('mynewsApp')
     var lat = user.lat || +geolocation.geo.lat;
     var lon = user.lon || +geolocation.geo.lon;
     var coorOffset = 1;
-    var allStories = [];
-    var allEvents = [];
+    var cachedEvents = null;
 
     // $scope.awesomeThings = [];
 
@@ -66,6 +65,10 @@ angular.module('mynewsApp')
   }
 
   function findEvents(options) {
+    if (cachedEvents) {
+      return Promise.resolve(cachedEvents);
+    }
+
     var eventsBaseUrl = "http://ajc.stage.pointslocal.com/";
     var apiUrl = "api/v1/events"
 
@@ -96,7 +99,7 @@ angular.module('mynewsApp')
                   }
               });
           });
-          allEvents = events;
+          cachedEvents = events;
           return events;
       });
 
@@ -163,13 +166,14 @@ angular.module('mynewsApp')
                       longitude: Number($("Longitude", places).text())
                   }
               };
-              console.log(story);
+
               // Filter out anything that doesn't have a title
               if (story.title) {
                   stories.push(story);
               }
+
+              //console.log(story);
           });
-          allStories = stories;
           return stories;
       });
   }
@@ -310,14 +314,11 @@ angular.module('mynewsApp')
 
           function poll() {
               console.log("Updating...");
-              findStories(pos).then(function(stories) {
-                  //console.log(stories);
-                  map.update(stories.concat(allEvents));
-                  setTimeout(poll, ms);
-              }, reject);
-              findEvents(pos).then(function(events) {
-                  map.update(events.concat(allStories));
-              }, reject);
+              Promise.all([findStories(pos), findEvents(pos)]).then(function(a) {
+                a = a[0].concat(a[1]);
+                map.update(a);
+                setTimeout(poll, ms);
+              }).catch(reject);
           }
 
           poll();
