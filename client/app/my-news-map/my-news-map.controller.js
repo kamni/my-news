@@ -14,9 +14,6 @@ angular.module('mynewsApp')
 
     $scope.awesomeThings = [];
 
-    getStories();
-
-
     $http.get('/api/things').success(function(awesomeThings) {
       $scope.awesomeThings = awesomeThings;
       socket.syncUpdates('thing', $scope.awesomeThings);
@@ -39,73 +36,258 @@ angular.module('mynewsApp')
     });
 
 
-    function findStories(options) {
-      var baseURL = "http://10.240.94.101:4301/eom/PortalConfig/wsbtv.com/jsp/rest.jsp";
+  "use strict";
+
+  function getPosition() {
+      // Quick result  for testing purposes
+      return Promise.resolve({ lat: lat, long: lon });
+
+      return new Promise(function(resolve, reject) {
+          navigator.geolocation.getCurrentPosition(function(pos) {
+              resolve({
+                  lat: pos.coords.latitude,
+                  long: pos.coords.longitude,
+              });
+          }, reject);
+      });
+  }
+
+  function getGeoSquare(lat, long, radius) {
+      radius = radius || .5;
+      return {
+          lat1: lat - radius,
+          lat2: lat + radius,
+          long1: long - radius,
+          long2: long + radius
+      };
+  }
+
+  function getStoryType(comment) {
+      switch (comment) {
+          case "Advertisement": return "ad"
+          default: return "story";
+      }
+  }
+
+  function findStories(options) {
+      var host = "http://10.240.94.101:4301",
+          baseURL = host + "/eom/PortalConfig/wsbtv.com/jsp/rest3.jsp";
+
       var data = {
-        query: options.query || "",
-        city: options.city,
-        lat1: options.lat1,
-        long1: options.long1,
-        lat2: options.lat2,
-        long2: options.long2
+          query: options.query || "",
+          city: options.city,
+          lat1: options.lat1,
+          long1: options.long1,
+          lat2: options.lat2,
+          long2: options.long2
       };
 
-      return $.ajax(baseURL, { dataType: "xml", data: data }).then(function(xml) {
-        var stories = [];
-        $("doc", xml).each(function(i, doc) {
-          var places = $("GeographicalPlaces", doc);
-          stories.push({
-            headline: $("grouphead > headline", doc).html(),
-            summary: $("summary", doc).html(),
-            text: $("text", doc).html(),
-            geo: {
-              address: $("Address", places).text(),
-              latitude: $("Latitude", places).text(),
-              longitude: $("Longitude", places).text()
-            }
-          });
-        });
-
-        return stories;
-      });
-    }
-
-    function getStories(){
-      console.log(stories.getStories().length);
-      if(stories.getStories().length){
-        $scope.storiesList = stories.getStories();
-        return;
+      if (typeof options.radius === "number" && typeof options.lat === "number") {
+          var square = getGeoSquare(options.lat, options.long, options.radius);
+          data.lat1 = square.lat1;
+          data.long1 = square.long1;
+          data.lat2 = square.lat2;
+          data.long2 = square.long2;
       }
-      findStories({
-        city: "",
-        lat1: (lat - coorOffset),
-        lon1: (lon - coorOffset),
-        lat2: (lat + coorOffset),
-        lon2: (lon + coorOffset)
-      }).then(function(storiesResult){
-        setStories.call(self, storiesResult);
-      }, function(err) {
-        console.error(err);
+
+      var xhr = $.ajax(baseURL, { method: "GET", dataType: "xml", data: data });
+
+      // This is a hack for now...
+      function getPhotoURL(fileref) {
+          return fileref ? host + "/rf/image_wsbtv_large" + fileref : "";
+      }
+
+      return Promise.resolve(xhr).then(function(xml) {
+
+          var stories = [];
+
+          $("item", xml).each(function(i, doc) {
+
+              var places = $("GeographicalPlaces", doc);
+
+              var story = {
+                  title: $("grouphead > headline", doc).text().trim(),
+                  headline: $("grouphead > headline", doc).html(),
+                  summary: $("summary", doc).html(),
+                  text: $("text", doc).html(),
+                  url: host + $("url", doc).text(),
+                  type: getStoryType($("Comment", doc).text()),
+                  photo: getPhotoURL($("photo", doc).attr("fileref")),
+                  geo: {
+                      address: $("Address", places).text(),
+                      latitude: Number($("Latitude", places).text()),
+                      longitude: Number($("Longitude", places).text())
+                  }
+              };
+              console.log(story);
+
+              // Filter out anything that doesn't have a title
+              if (story.title) {
+                  stories.push(story);
+              }
+          });
+
+          return stories;
       });
-    }
+  }
 
-    function setStories(storiesResult){
-      var storiesList = [];
+  var StoryMap = (function() {
 
-      angular.forEach(storiesResult, function(v){
-        console.log(v);
-        var data = {};
-        data.headline = $(v.headline).text();
-        data.summary = $(v.summary).text();
-        data.geo = v.geo;
-        data.distance = +geolocation.distance(+v.geo.longitude, +v.geo.latitude);
-        storiesList.push(data);
+      var apiSrc = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBAvOY2tUjwfZoCop036PBJh9FUg7qcX1Q&sensor=false",
+          apiCallback = "initStoryMap",
+          apiReady = null;
 
+      function loadAPI() {
+          if (apiReady) return apiReady;
+
+          return apiReady = new Promise(function(resolve) {
+              window[apiCallback] = resolve;
+
+              var e = document.createElement("script");
+              e.async = true;
+              e.defer = true;
+              e.src = apiSrc + "&callback=" + apiCallback;
+              document.getElementsByTagName("head")[0].appendChild(e);
+
+          });
+      }
+
+      function createPopup(story) {
+          var content = "<h3><a href='" + story.url + "' target='_blank'>" + story.headline + "</a></h3>";
+
+          if (story.photo) {
+              content += "<div><img src='" + story.photo + "' style='width:100%' /></div>";
+          }
+
+          if (story.type !== "ad") {
+              content += story.text;
+          }
+
+          content = content.trim();
+
+          var window = new google.maps.InfoWindow({
+              content: content,
+              maxWidth: story.type === "ad" ? 500 : 300
+          });
+
+          return window;
+      }
+
+      function createStoryMarker(map, story) {
+          var marker = new google.maps.Marker({
+              map: map,
+              position: { lat: story.geo.latitude, lng: story.geo.longitude },
+              title: story.title,
+              icon: story.type === "ad" ? "/assets/images/pin_blue.png" : "/assets/images/pin_red.png"
+          });
+
+          var window = createPopup(story);
+          marker.addListener("click", function(evt) { window.open(map, marker); });
+
+          return marker;
+      }
+
+      function updateStoryMarker(marker, story) {
+          marker.setTitle(story.title);
+          marker.setPosition({
+              lat: story.geo.latitude,
+              lng: story.geo.longitude
+          });
+      }
+
+      function createMap(element, pos) {
+          return loadAPI().then(function() {
+              var map = new google.maps.Map(element, {
+                  center: { lat: pos.lat, lng: pos.long },
+                  zoom: pos.zoom || 8
+              });
+
+              var markers = null;
+
+              function update(stories) {
+
+                  var initialLoad = false,
+                      urls = {};
+
+                  if (!markers) {
+                      markers = {};
+                      initialLoad = true;
+                  }
+
+                  // Create a list of URLs (this is important for determining whether to delete a marker)
+                  Object.keys(markers).forEach(function(url) {
+                      urls[url] = 0;
+                  });
+
+                  stories.forEach(function(story) {
+                      var m = markers[story.url];
+
+                      // Mark the URL as visited
+                      urls[story.url] = 1;
+
+                      if (!m) {
+
+                          m = markers[story.url] = createStoryMarker(map, story);
+
+                          if (!initialLoad || true) {
+                              m.setAnimation(google.maps.Animation.BOUNCE);
+                              setTimeout(function() {
+                                  m.setAnimation(null);
+                              }, 3000);
+                          }
+
+                      } else {
+
+                          updateStoryMarker(m, story);
+                      }
+                  });
+
+                  // Remove any markers for stories that no longer exist
+                  Object.keys(urls).forEach(function(url) {
+                      if (urls[url] === 0 && markers[url]) {
+                          markers[url].setMap(null);
+                          markers[url] = null;
+                      }
+                  });
+              }
+
+              return { update: update };
+          });
+      }
+
+      return {
+          create: createMap
+      };
+
+  })();
+
+
+  function pollStories(map, pos, ms) {
+      return new Promise(function(resolve, reject) {
+
+          function poll() {
+              console.log("Updating...");
+              findStories(pos).then(function(stories) {
+                  //console.log(stories);
+                  map.update(stories);
+                  //setTimeout(poll, ms);
+              }, reject);
+          }
+
+          poll();
       });
-      $scope.storiesList = storiesList;
-      stories.setStories(storiesList);
-      console.log($scope.storiesList);
-    }
+  }
+
+  getPosition().then(function(pos) {
+      pos.radius = 1;
+      pos.zoom = 12;
+      StoryMap.create($("#map")[0], pos).then(function(map) {
+          pollStories(map, pos, 1000);
+      });
+  });
+
+
+
 
 
   });

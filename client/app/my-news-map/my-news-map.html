@@ -1,13 +1,13 @@
 <div class="cm-channel-root">
-  <div class="cm-header-banner"><img src="http://media.cmgdigital.com/shared/img/sections/header_img/2015/Sep/02/AJC_Local_Channel_Header.jpg"><h1>My News</h1></div>
+  <div class="cm-header-banner"><img src="http://media.cmgdigital.com/shared/img/sections/header_img/2015/Sep/02/AJC_Local_Channel_Header.jpg"><h1>My Local</h1></div>
 </div>
 
-<header class="subhead" id="subhead"><div class="subhead-breadcrumb pull-left"><a href="/">Home</a>
-  &nbsp;&nbsp;/&nbsp;&nbsp;<a href="/my-news/">My News</a>
-  <!--&nbsp;&nbsp;/&nbsp;&nbsp;<a href="/categories/news/local/">Local</a>-->
+<!-- <header class="subhead" id="subhead"><div class="subhead-breadcrumb pull-left"><a href="/">Home</a>
+  &nbsp;&nbsp;/&nbsp;&nbsp;<a href="/my-news/">My Local</a>
+  &nbsp;&nbsp;/&nbsp;&nbsp;<a href="/categories/news/local/">Local</a>
 
 </div></header>
-
+ -->
 
   <div class="span12">
 
@@ -26,11 +26,14 @@
       </form>
 
 -->
-    <div class="story myStory" ng-repeat="story in storiesList | orderBy:'distance'">
+
+    <div id="map"></div>
+    <div id="modal"></div>
+<!--     <div class="story myStory" ng-repeat="story in storiesList | orderBy:'distance'">
       <span>{{ story.distance }} mi</span>
       <h4 class="story-title"><a href="#">{{ story.headline }}</a></h4>
       <p>{{ story.summary }}</p>
-    </div>
+    </div> -->
   </div>
 
 <div class="span12">
