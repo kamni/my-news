@@ -11,6 +11,8 @@ angular.module('mynewsApp')
     var lat = +geolocation.geo.lat;
     var lon = +geolocation.geo.lon;
     var coorOffset = 1;
+    var allStories = [];
+    var allEvents = [];
 
     $scope.awesomeThings = [];
 
@@ -62,9 +64,51 @@ angular.module('mynewsApp')
       };
   }
 
+  function findEvents(options) {
+    var eventsBaseUrl = "http://ajc.stage.pointslocal.com/";
+    var apiUrl = "api/v1/events"
+
+    var data = {
+      latitude: options.lat,
+      longitude: options.lon,
+      radius: options.radius
+    };
+
+    var xhr = $.ajax(eventsBaseUrl + apiUrl, { method: "GET", dataType: "json", data: data });
+
+    return Promise.resolve(xhr).then(function(json) {
+        var events = [];
+        $.each(json.items, function(k, item) {
+          console.log(item);
+              events.push({
+                  title: '',
+                  text: '',
+                  type: '',
+                  headline: item.venue_name ? item.title + " at " + item.venue_name : item.title,
+                  summary: item.description,
+                  url: eventsBaseUrl + "event/" + item.guid,
+                  photo: eventImageUrl(item.id, 53, 93),
+                  comment: "Event",
+                  geo: {
+                        address: item.venue_address,
+                        latitude: +item.latitude,
+                        longitude: +item.longitude
+                  }
+              });
+          });
+          allEvents = events;
+          return events;
+      });
+
+      function eventImageUrl(imageId, height, width) {
+          return eventsBaseUrl + "image?method=image.icrop&context=event.image&w=" + width + "&h=" + height + "&id=" + imageId
+      }
+  }
+
   function getStoryType(comment) {
       switch (comment) {
           case "Advertisement": return "ad"
+          case "Event": return "event"
           default: return "story";
       }
   }
@@ -119,14 +163,13 @@ angular.module('mynewsApp')
                       longitude: Number($("Longitude", places).text())
                   }
               };
-              console.log(story);
 
               // Filter out anything that doesn't have a title
               if (story.title) {
                   stories.push(story);
               }
           });
-
+          allStories = stories;
           return stories;
       });
   }
@@ -269,7 +312,12 @@ angular.module('mynewsApp')
               console.log("Updating...");
               findStories(pos).then(function(stories) {
                   //console.log(stories);
-                  map.update(stories);
+                  map.update(stories.concat(allEvents));
+                  //setTimeout(poll, ms);
+              }, reject);
+              findEvents(pos).then(function(events) {
+                  console.log(events);
+                  map.update(events.concat(allStories));
                   //setTimeout(poll, ms);
               }, reject);
           }

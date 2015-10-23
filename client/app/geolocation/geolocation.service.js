@@ -1,11 +1,28 @@
 'use strict';
 
 angular.module('mynewsApp')
-  .service('geolocation', function () {
+  .service('geolocation', function ($http) {
     var geo = {
       lat: 33.92472,
       lon: -84.35655
     };
+
+    var baseUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=";
+    var endUrl = "&key=AIzaSyAmweNIVntbXmpIZ0VA7umwPUKPPH3QAWw&sensor=false";
+
+    function geocode(street, city, state){
+      // console.log(street, city, state);
+      var xhr = $.ajax(baseUrl + street.replace(/\s+/g, '+') + ',' + city.replace(/\s+/g, '+') + ',' + state.replace(/\s+/g, '+') + endUrl, { method: "GET", dataType: "json" });
+
+      //var url = baseUrl + street.replace(/\s+/g, '+') + ',' + city.replace(/\s+/g, '+') + ',' + state.replace(/\s+/g, '+') + endUrl;
+
+      return Promise.resolve(xhr).then(function(json) {
+        console.log(json.results[0]);
+        geo.lat = json.results[0].geometry.location.lat;
+        geo.lon = json.results[0].geometry.location.lon;
+        return json.results[0].geometry.location;
+      });
+    }
 
     function distance(lon1, lat1, lon2, lat2) {
       lon2 = geo.lon || lon2;
@@ -30,6 +47,7 @@ angular.module('mynewsApp')
 
     return {
       distance: distance,
-      geo: geo
+      geo: geo,
+      geocode: geocode
     }
   });

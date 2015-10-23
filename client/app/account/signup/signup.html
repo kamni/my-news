@@ -1,69 +1,65 @@
 
-<div class="container">
+<div class="padded-container">
   <div class="row">
-    <div class="col-sm-12">
+    <div class="span12">
       <h1>Sign up</h1>
     </div>
-    <div class="col-sm-12">
+    <div class="span12">
       <form class="form" name="form" ng-submit="register(form)" novalidate>
 
         <div class="form-group" ng-class="{ 'has-success': form.name.$valid && submitted,
                                             'has-error': form.name.$invalid && submitted }">
           <label>Name</label>
+          <input type="text" name="name" placeholder="Full Name" class="form-control" ng-model="user.name" required/>
 
-          <input type="text" name="name" class="form-control" ng-model="user.name"
-                 required/>
-          <p class="help-block" ng-show="form.name.$error.required && submitted">
-            A name is required
-          </p>
+          <p class="help-block" ng-show="form.name.$error.required && submitted">A name is required</p>
         </div>
 
         <div class="form-group" ng-class="{ 'has-success': form.email.$valid && submitted,
                                             'has-error': form.email.$invalid && submitted }">
           <label>Email</label>
-
-          <input type="email" name="email" class="form-control" ng-model="user.email"
-                 required
-                 mongoose-error/>
-          <p class="help-block" ng-show="form.email.$error.email && submitted">
-            Doesn't look like a valid email.
-          </p>
-          <p class="help-block" ng-show="form.email.$error.required && submitted">
-            What's your email address?
-          </p>
-          <p class="help-block" ng-show="form.email.$error.mongoose">
-            {{ errors.email }}
-          </p>
+          <input type="email" name="email" placeholder="Valid Email" class="form-control" ng-model="user.email" required  mongoose-error/>
+          <p class="help-block" ng-show="form.email.$error.email && submitted">Doesn't look like a valid email.</p>
+          <p class="help-block" ng-show="form.email.$error.required && submitted">What's your email address?</p>
+          <p class="help-block" ng-show="form.email.$error.mongoose">{{ errors.email }}</p>
         </div>
 
         <div class="form-group" ng-class="{ 'has-success': form.password.$valid && submitted,
                                             'has-error': form.password.$invalid && submitted }">
           <label>Password</label>
-
-          <input type="password" name="password" class="form-control" ng-model="user.password"
-                 ng-minlength="3"
-                 required
-                 mongoose-error/>
+          <input type="password" placeholder="Password at least 3 characters" name="password" class="form-control" ng-model="user.password" ng-minlength="3" required mongoose-error/>
           <p class="help-block"
-             ng-show="(form.password.$error.minlength || form.password.$error.required) && submitted">
-            Password must be at least 3 characters.
-          </p>
+             ng-show="(form.password.$error.minlength || form.password.$error.required) && submitted">Password must be at least 3 characters.</p>
           <p class="help-block" ng-show="form.password.$error.mongoose">
             {{ errors.password }}
           </p>
+          <p class="help-block" ng-show="form.street.$error">
+            {{ errors.street }}
+          </p>
+          <p class="help-block" ng-show="form.city.$error">
+            {{ errors.city }}
+          </p>
+          <p class="help-block" ng-show="form.state.$error">
+            {{ errors.state }}
+          </p>
+
+          <label>Street</label>
+          <input type="text" placeholder="Ex. 123 Main St." name="street" class="form-control" ng-model="user.street" ng-minlength="3" required mongoose-error/>
+
+          <label>City</label>
+          <input type="text" placeholder="Ex. Sandy Springs" name="city" class="form-control" ng-model="user.city" ng-minlength="3" required mongoose-error/>
+
+          <label>State</label>
+          <input type="text" placeholder="State" name="state" class="form-control" ng-model="user.state" required mongoose-error/>
+
         </div>
 
         <div>
-          <button class="btn btn-inverse btn-lg btn-login" type="submit">
-            Sign up
-          </button>
-          <a class="btn btn-default btn-lg btn-register" href="/login">
-            Login
-          </a>
+          <button class="btn btn-inverse btn-lg btn-login" type="submit">Sign up</button>
+          <a class="btn btn-default btn-lg btn-register" href="/login">Login</a>
         </div>
 
       </form>
     </div>
   </div>
-  <hr>
 </div>

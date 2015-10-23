@@ -6,14 +6,13 @@ angular.module('mynewsApp')
   //    return $sce.trustAsHtml(val);
   //  };
   //})
-  .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation) {
+  .controller('MyNewsCtrl', function ($scope, $http, socket, stories, geolocation, Auth) {
     var self = this;
     var lat = +geolocation.geo.lat;
     var lon = +geolocation.geo.lon;
     var coorOffset = 1;
     var host = "http://10.240.94.101:4301";
     var now = Date.now();
-
 
     $scope.awesomeThings = [];
     $scope.storiesList = [];

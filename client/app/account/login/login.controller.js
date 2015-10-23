@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('mynewsApp')
-  .controller('LoginCtrl', function ($scope, Auth, $location) {
+  .controller('LoginCtrl', function ($scope, Auth, $location, geolocation) {
     $scope.user = {};
     $scope.errors = {};
 
@@ -14,6 +14,13 @@ angular.module('mynewsApp')
           password: $scope.user.password
         })
         .then( function() {
+
+          var user = Auth.getCurrentUser();
+
+          console.log(user);
+          geolocation.geo.lat = user.lat;
+          geolocation.geo.lon = user.lon;
+
           // Logged in, redirect to home
           $location.path('/');
         })

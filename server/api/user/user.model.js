@@ -14,10 +14,11 @@ var UserSchema = new Schema({
   hashedPassword: String,
   provider: String,
   salt: String,
-  location: {
-    lat: Number,
-    log: Number
-  }
+  street: String,
+  city: String,
+  state: String,
+  lat: Number,
+  lon: Number
 });
 
 /**
